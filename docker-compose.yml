@@ -1,0 +1,57 @@
+services:
+  php:
+    build:
+      context: ./
+      dockerfile: app/Dockerfile
+
+    container_name: matheus-ifsp-php
+    restart: always
+    volumes:
+      - ./app:/var/www/html
+    networks:
+      - t-network
+    ports:
+      - "80:80"
+    links:
+      - mysql
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./tabela.sql:/docker-entrypoint-initdb.d/tabela.sql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha_da_nasa
+      MYSQL_DATABASE: crud
+      MYSQL_USER: userT
+      MYSQL_PASSWORD: senhaT
+    networks:
+      - t-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    volumes:
+      - /sessions
+    ports:
+      - "8080:80"
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: userT
+      PMA_PASSWORD: senhaT
+    depends_on:
+      - mysql
+    networks:
+      - t-network
+
+networks:
+  t-network:
+    driver: bridge
